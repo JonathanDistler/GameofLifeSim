@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Game of life </title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;   /* centers horizontally */
+      align-items: center;       /* centers vertically */
+      height: 100vh;             /* full viewport height */
+      margin: 0;                 /* remove default margins */
+    }
+    table {
+      border-collapse: collapse;
+    }
+    td {
+      width: 40px;
+      height: 40px;
+      background-color: red;
+    }
+    /* Checkerboard pattern 
+    tr:nth-child(odd) td:nth-child(even),
+    tr:nth-child(even) td:nth-child(odd) {
+      background-color: red;
+    }
+      */
+    
+  </style>
+</head>
+<body>
+  <table>
+    <h1 id="simTitle">Game of Life </h1>
+    <table id="board">
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <script>
+
+
+//alive means the cell is 1
+//dead means the cell is 0
+
+//finds the number of neighbors dead and alive
+function numCount(i, j, arr) {
+  let count = 0;
+
+  // bounds on loops
+  let k_start = i - 1;
+  let k_end   = i + 1;
+  let l_start = j - 1;
+  let l_end   = j + 1;
+
+  // edge cases 
+  let row_0 = 0;
+  let row_f = arr.length - 1;        
+  let col_0 = 0;
+  let col_f = arr[0].length - 1;     
+
+  if (i === row_0) {
+    k_start = i;
+  } else if (i === row_f) {
+    k_end = i;
+  }
+
+  if (j === col_0) {
+    l_start = j;
+  } else if (j === col_f) {
+    l_end = j;
+  }
+
+  for (let k = k_start; k <= k_end; k++) {
+    for (let l = l_start; l <= l_end; l++) {
+      // Skip the center cell
+      if (k !== i || l !== j) {
+        // Make sure indices are in bounds
+        if (k >= 0 && k < arr.length && l >= 0 && l < arr[0].length) {
+          if (arr[k][l] === 1){
+            //determines the number of dead neighbors
+            count++;
+          }
+        }
+      }
+    }
+  }
+
+  return count;
+}
+
+function isAlive(i, j, arr) {
+  let count = numCount(i, j, arr);
+
+  if (arr[i][j] === 1) { // currently alive
+        if (count<2){
+            arr[i][j] = 0;
+            colorChange(i, j, "red");    // dead from underpopulation
+
+    }
+
+    
+        else if (count==2 || count==3){
+            arr[i][j]=1; //stays alive
+
+        }
+      else if (count>3){
+            arr[i][j]=0;
+            colorChange(i, j, "red");    // dead from overpopulation
+        }
+     }
+
+    else{ //currently dead
+        if (count==3){
+            arr[i][j]=1;
+            colorChange(i,j,"blue"); //repopulates
+        }
+
+    }
+
+
+}
+function colorChange(i,j,color){
+    //changes color of the square
+    let table = document.getElementById("board"); //from the setup, the name of the board id
+    let cell = table.rows[i].cells[j]; // i,j cell
+    cell.style.backgroundColor = color; // changes color
+
+}
+
+function gameSetup(boxSize,i,j,likelihood, arr){
+
+
+    let increment=Math.floor(boxSize/2);
+
+    // bounds on loops
+    let k_start = i - increment;
+    let k_end   = i + increment;
+    let l_start = j - increment;
+    let l_end   = j + increment;
+
+    // edge cases 
+    let row_0 = 0;
+    let row_f = arr.length - 1;        
+    let col_0 = 0;
+    let col_f = arr[0].length - 1;     
+
+    if (i === row_0) {
+        k_start = i;
+    } 
+  
+    if (i === row_f) {
+        k_end = i;
+    }
+
+    if (j === col_0) {
+        l_start = j;
+    } 
+  
+    if (j === col_f) {
+        l_end = j;
+    }
+
+  for (let k = k_start; k <= k_end; k++) {
+    for (let l = l_start; l <= l_end; l++) {
+        // Make sure indices are in bounds
+        if (k >= 0 && k < arr.length && l >= 0 && l < arr[0].length) {
+            //generates a random number if it is greater than the likelihood, then it will initialize as "dead"
+            const randomNumber = Math.random();
+            if (randomNumber <= likelihood) {
+                arr[k][l] = 1;  // alive
+                 colorChange(k, l, "blue");
+            } else {
+                arr[k][l] = 0;  // dead
+                colorChange(k, l, "red");
+            }
+      }
+    }
+  }
+
+
+
+}
+
+function updateTitle(text) {
+      document.getElementById("simTitle").textContent = text;
+    }
+
+//creates an 8x8 matrix with all zeros, need to make generalizable to always match the color setup of the boards initialization
+let arr = Array.from({ length: 8 }, () => Array(8).fill(0));
+
+let aliveThreshold = 2;
+let deadThreshold = 7;
+
+let epoch = 0;
+updateTitle(`Epoch Number ${epoch}`);
+
+// initialize the board with a 3x3 box in the center square with 0.5 likelihod of populating
+gameSetup(3, 3, 3, 0.5, arr);
+
+// run updates AFTER setup
+let rowNum = 8;
+let colNum = 8;
+let numEpochs = 10;
+
+let interval = setInterval(() => {
+  epoch++;
+  if (epoch > numEpochs) { clearInterval(interval); return; }
+
+  updateTitle(`Epoch Number ${epoch}`);
+
+  // create a copy of the board for next generation
+  let nextArr = arr.map(row => [...row]);
+
+  for (let i = 0; i < rowNum; i++) {
+    for (let j = 0; j < colNum; j++) {
+      let aliveNeighbors = numCount(i, j, arr);
+
+      if (arr[i][j] === 1) {
+        if (aliveNeighbors < 2 || aliveNeighbors > 3) {
+          nextArr[i][j] = 0;
+        }
+      } else {
+        if (aliveNeighbors === 3) {
+          nextArr[i][j] = 1;
+        }
+      }
+    }
+  }
+
+  arr = nextArr;
+
+  // render the whole board
+  for (let i = 0; i < rowNum; i++) {
+    for (let j = 0; j < colNum; j++) {
+      colorChange(i, j, arr[i][j] === 1 ? "blue" : "red");
+    }
+  }
+
+}, 1000);
+
+
+//next step is implementing a way to graph the results of the number of alive vs dead and over many more epochs 
+//next step is to change the logic on when it lives vs dies 
+
+  </script>
+
+</body>
+</html>
