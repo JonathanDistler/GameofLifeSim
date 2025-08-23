@@ -86,11 +86,13 @@ function gameSetup() {
   }
 }
 
-// Blue gradient function
+// Blue-Red gradient function
 function getBlueShade(value, min=0, max=numGenerations*numEpochs) {
-  let t = (value - min)/(max - min);
-  let lightness = 90 - t*70; // 90% -> 20%
-  return `hsl(210,100%,${lightness}%)`;
+  let t = (value - min) / (max - min);
+  let r = (255 * t);
+  let g = 0;
+  let b = (255 * (1 - t));
+  return `rgb(${r},${g},${b})`;
 }
 
 function runSimulation(runIndex=0) {
